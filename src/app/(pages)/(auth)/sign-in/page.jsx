@@ -1,13 +1,11 @@
 "use client";
-
+import dynamic from "next/dynamic";
 import React from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
-import axios from "axios";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -31,16 +29,14 @@ export const signInSchema = z.object({
     .max(100, "Password is too long"),
 });
 
-const SignUpPage = () => {
+const Page = () => {
   const router = useRouter();
 
   const form = useForm({
-    resolver: zodResolver(signUpSchema),
+    resolver: zodResolver(signInSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      role: "admin",
     },
   });
 
@@ -62,27 +58,14 @@ const SignUpPage = () => {
       <div className="w-full max-w-md space-y-8 px-4">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-            Create an Account
+            Welcome back to Hackathon
           </h1>
+          
         </div>
 
         <div className="border rounded-lg p-8 bg-card shadow-sm">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                name="name"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 name="email"
                 control={form.control}
@@ -90,7 +73,10 @@ const SignUpPage = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your email" {...field} />
+                      <Input
+                        placeholder="Enter your email "
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -104,48 +90,19 @@ const SignUpPage = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                name="role"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Role</FormLabel>
-                    <div className="grid grid-cols-3 gap-2">
-                      {roles.map((role) => (
-                        <label 
-                          key={role} 
-                          className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
-                            field.value === role 
-                              ? 'bg-primary text-primary-foreground border-primary' 
-                              : 'bg-muted hover:bg-muted/80 border-muted-foreground/20'
-                          }`}
-                          onClick={() => field.onChange(role)}
-                        >
-                          <input
-                            type="radio"
-                            value={role}
-                            checked={field.value === role}
-                            onChange={() => field.onChange(role)}
-                            className="sr-only"
-                          />
-                          {role.charAt(0).toUpperCase() + role.slice(1)}
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <Button className="w-full" type="submit">
-                Sign Up
+                Sign In
               </Button>
             </form>
           </Form>
@@ -166,4 +123,4 @@ const SignUpPage = () => {
   );
 };
 
-export default SignUpPage;
+export default Page;
