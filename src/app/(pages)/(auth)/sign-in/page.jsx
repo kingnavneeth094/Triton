@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 
+const roles = ["admin", "coordinator", "organizer"];
+
 export const signInSchema = z.object({
   email: z
     .string()
@@ -26,6 +28,7 @@ export const signInSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters long")
     .max(100, "Password is too long"),
+  role: z.enum(roles, { required_error: "Please select a role" }),
 });
 
 const Page = () => {
@@ -36,6 +39,7 @@ const Page = () => {
     defaultValues: {
       email: "",
       password: "",
+      role: "admin",
     },
   });
 
@@ -43,8 +47,9 @@ const Page = () => {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
+      role: data.role, // Sending role to backend
       redirect: false,
-      callbackUrl: "/dashboard",
+      callbackUrl: `/dashboard/${data.role}`, // Redirect to role-specific dashboard
     });
 
     if (result?.url) {
@@ -59,7 +64,6 @@ const Page = () => {
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
             Welcome back to Hackathon
           </h1>
-          
         </div>
 
         <div className="border rounded-lg p-8 bg-card shadow-sm">
@@ -72,10 +76,7 @@ const Page = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter your email "
-                        {...field}
-                      />
+                      <Input placeholder="Enter your email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -89,12 +90,41 @@ const Page = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your password"
-                        {...field}
-                      />
+                      <Input type="password" placeholder="Enter your password" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="role"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Role</FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      {roles.map((role) => (
+                        <label 
+                          key={role} 
+                          className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
+                            field.value === role 
+                              ? 'bg-primary text-primary-foreground border-primary' 
+                              : 'bg-muted hover:bg-muted/80 border-muted-foreground/20'
+                          }`}
+                          onClick={() => field.onChange(role)}
+                        >
+                          <input
+                            type="radio"
+                            value={role}
+                            checked={field.value === role}
+                            onChange={() => field.onChange(role)}
+                            className="sr-only"
+                          />
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </label>
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -109,9 +139,7 @@ const Page = () => {
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Not a member yet?{" "}
-              <Link
-                href="/sign-up"
-                className="font-medium text-primary hover:underline">
+              <Link href="/sign-up" className="font-medium text-primary hover:underline">
                 Sign up
               </Link>
             </p>
