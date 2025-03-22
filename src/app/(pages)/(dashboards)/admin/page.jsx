@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, LogOut, UserPlus, Users, Settings } from 'lucide-react';
+import { Search, LogOut, UserPlus, Users, Settings, Layout } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -21,8 +21,11 @@ export default function AdminDashboard() {
       case 'view-coordinators':
         router.push('/admin/view-coordinators');
         break;
-      case 'configure-building':
-        router.push('/admin/configure-building');
+      case 'configure-layout':
+        router.push('/admin/configure');
+        break;
+      case 'view-layouts':
+        router.push('/admin/view');
         break;
       default:
         break;
@@ -62,7 +65,7 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Create Coordinators Card */}
           <div
             onClick={() => handleOptionClick('create-coordinators')}
@@ -95,9 +98,9 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Configure Building Card */}
+          {/* Configure Layout Card */}
           <div
-            onClick={() => handleOptionClick('configure-building')}
+            onClick={() => handleOptionClick('configure-layout')}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
           >
             <div className="flex items-center">
@@ -105,8 +108,24 @@ export default function AdminDashboard() {
                 <Settings className="h-8 w-8 text-purple-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Configure Building</h3>
-                <p className="mt-1 text-sm text-gray-500">Set up and manage building settings</p>
+                <h3 className="text-lg font-medium text-gray-900">Configure Layout</h3>
+                <p className="mt-1 text-sm text-gray-500">Set up and manage room layouts</p>
+              </div>
+            </div>
+          </div>
+
+          {/* View Layouts Card */}
+          <div
+            onClick={() => handleOptionClick('view-layouts')}
+            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+          >
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Layout className="h-8 w-8 text-orange-500" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900">View Layouts</h3>
+                <p className="mt-1 text-sm text-gray-500">View and manage room layouts</p>
               </div>
             </div>
           </div>
