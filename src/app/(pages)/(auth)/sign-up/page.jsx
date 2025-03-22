@@ -19,11 +19,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const signUpSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters long").max(50),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
-});
+// Update roles to match your MongoDB schema
+const roles = ["admin", "organizer",];
+
+const signUpSchema = z
+  .object({
+    name: z.string().min(3, "Name must be at least 3 characters long").max(50),
+    email: z.string().email("Invalid email format"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    role: z.enum(roles, { required_error: "Please select a role" }),
+    college: z
+      .string()
+      .optional()
+      .refine((val) => {
+        if (val === undefined || val === "") return true;
+        return val.length >= 3;
+      }, "College name must be at least 3 characters long"),
+    numberOfRooms: z
+      .string()
+      .optional()
+      .refine((val) => {
+        if (val === undefined || val === "") return true;
+        return !isNaN(val) && parseInt(val) > 0;
+      }, "Number of rooms must be a positive number"),
+  })
+  .refine(
+    (data) => {
+      if (data.role === "admin") {
+        return !!data.college && !!data.numberOfRooms;
+      }
+      return true;
+    },
+    {
+      message: "College and number of rooms are required for admin role",
+      path: ["role"],
+    }
+  );
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -34,12 +65,34 @@ const SignUpPage = () => {
       name: "",
       email: "",
       password: "",
+      role: "",
+      college: "",
+      numberOfRooms: "",
     },
   });
 
+  const watchRole = form.watch("role");
+
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post("/api/sign-up", data);
+      // Prepare the formData object with only the necessary fields
+      const formData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      };
+      // Only add college and numberOfRooms for admin role
+      if (data.role === "admin") {
+        formData.college = data.college;
+        formData.numberOfRooms = parseInt(data.numberOfRooms, 10);
+      }
+  
+      // Log form data for debugging
+      console.log("Submitted Data:", formData);
+  
+      // Send data to backend
+      const res = await axios.post("/api/sign-up", formData);
       if (res.status === 201) {
         router.push("/sign-in");
       }
@@ -47,7 +100,7 @@ const SignUpPage = () => {
       console.error("Registration failed", error.response?.data || error.message);
     }
   };
-
+  
   return (
     <div className="container mx-auto flex items-center justify-center min-h-screen py-8">
       <div className="w-full max-w-md space-y-8 px-4">
@@ -95,12 +148,88 @@ const SignUpPage = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <FormField
+                name="role"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Role</FormLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      {roles.map((role) => (
+                        <label
+                          key={role}
+                          className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
+                            field.value === role
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-muted hover:bg-muted/80 border-muted-foreground/20"
+                          }`}
+                          onClick={() => field.onChange(role)}>
+                          <input
+                            type="radio"
+                            value={role}
+                            checked={field.value === role}
+                            onChange={() => field.onChange(role)}
+                            className="sr-only"
+                          />
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </label>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {watchRole === "admin" && (
+                <>
+                  <FormField
+                    name="college"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>College Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your college name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    name="numberOfRooms"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of Rooms</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter number of rooms"
+                            min="1"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
 
               <Button className="w-full" type="submit">
                 Sign Up
@@ -111,7 +240,9 @@ const SignUpPage = () => {
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/sign-in" className="font-medium text-primary hover:underline">
+              <Link
+                href="/sign-in"
+                className="font-medium text-primary hover:underline">
                 Sign in
               </Link>
             </p>

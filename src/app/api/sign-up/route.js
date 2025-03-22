@@ -7,7 +7,7 @@ export async function POST(req) {
   try {
     await dbConnect();
 
-    const { name, email, password } = await req.json(); // ✅ Fix: Use req.json()
+    const { name, email, password, role, college, numberOfRooms } = await req.json();
 
     // Check if user already exists
     const user = await userModel.findOne({ email });
@@ -21,8 +21,18 @@ export async function POST(req) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
-    const newUser = new userModel({ name, email, password: hashedPassword });
+    // Create new user with all fields from the schema
+    const newUser = new userModel({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "",
+      college: college || "",
+      numberOfRooms: numberOfRooms || 0,
+      picture: "",
+      descriptions: "",
+    });
+    
     await newUser.save();
 
     return NextResponse.json(
