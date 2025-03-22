@@ -1,10 +1,13 @@
 "use client";
+
 import React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import Link from "next/link";
+
 import {
   Form,
   FormControl,
@@ -15,40 +18,33 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signIn } from "next-auth/react";
 
-export const signInSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email or username is required")
-    .max(100, "Email or username is too long"),
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters long")
-    .max(100, "Password is too long"),
+const signUpSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters long").max(50),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
-const Page = () => {
+const SignUpPage = () => {
   const router = useRouter();
 
   const form = useForm({
-    resolver: zodResolver(signInSchema),
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
   });
 
   const onSubmit = async (data) => {
-    const result = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-      callbackUrl: "/dashboard",
-    });
-
-    if (result?.url) {
-      router.replace(result.url);
+    try {
+      const res = await axios.post("/api/sign-up", data);
+      if (res.status === 201) {
+        router.push("/sign-in");
+      }
+    } catch (error) {
+      console.error("Registration failed", error.response?.data || error.message);
     }
   };
 
@@ -57,14 +53,27 @@ const Page = () => {
       <div className="w-full max-w-md space-y-8 px-4">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-            Welcome back to Hackathon
+            Create an Account
           </h1>
-          
         </div>
 
         <div className="border rounded-lg p-8 bg-card shadow-sm">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                name="name"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 name="email"
                 control={form.control}
@@ -72,10 +81,7 @@ const Page = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter your email "
-                        {...field}
-                      />
+                      <Input placeholder="Enter your email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -89,11 +95,7 @@ const Page = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your password"
-                        {...field}
-                      />
+                      <Input type="password" placeholder="Enter your password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,18 +103,16 @@ const Page = () => {
               />
 
               <Button className="w-full" type="submit">
-                Sign In
+                Sign Up
               </Button>
             </form>
           </Form>
 
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
-              Not a member yet?{" "}
-              <Link
-                href="/sign-up"
-                className="font-medium text-primary hover:underline">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/sign-in" className="font-medium text-primary hover:underline">
+                Sign in
               </Link>
             </p>
           </div>
@@ -122,4 +122,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default SignUpPage;
