@@ -18,11 +18,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { signIn } from "next-auth/react";
 
-const signUpSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters long").max(50),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
+export const signInSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email or username is required")
+    .max(100, "Email or username is too long"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters long")
+    .max(100, "Password is too long"),
 });
 
 const SignUpPage = () => {
@@ -34,17 +40,20 @@ const SignUpPage = () => {
       name: "",
       email: "",
       password: "",
+      role: "admin",
     },
   });
 
   const onSubmit = async (data) => {
-    try {
-      const res = await axios.post("/api/sign-up", data);
-      if (res.status === 201) {
-        router.push("/sign-in");
-      }
-    } catch (error) {
-      console.error("Registration failed", error.response?.data || error.message);
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+      callbackUrl: "/dashboard",
+    });
+
+    if (result?.url) {
+      router.replace(result.url);
     }
   };
 
@@ -102,6 +111,39 @@ const SignUpPage = () => {
                 )}
               />
 
+              <FormField
+                name="role"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Role</FormLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      {roles.map((role) => (
+                        <label 
+                          key={role} 
+                          className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
+                            field.value === role 
+                              ? 'bg-primary text-primary-foreground border-primary' 
+                              : 'bg-muted hover:bg-muted/80 border-muted-foreground/20'
+                          }`}
+                          onClick={() => field.onChange(role)}
+                        >
+                          <input
+                            type="radio"
+                            value={role}
+                            checked={field.value === role}
+                            onChange={() => field.onChange(role)}
+                            className="sr-only"
+                          />
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </label>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button className="w-full" type="submit">
                 Sign Up
               </Button>
@@ -110,9 +152,11 @@ const SignUpPage = () => {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/sign-in" className="font-medium text-primary hover:underline">
-                Sign in
+              Not a member yet?{" "}
+              <Link
+                href="/sign-up"
+                className="font-medium text-primary hover:underline">
+                Sign up
               </Link>
             </p>
           </div>
