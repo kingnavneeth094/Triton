@@ -22,10 +22,10 @@ export default function AdminDashboard() {
         router.push('/admin/view-coordinators');
         break;
       case 'configure-layout':
-        router.push('/admin/configure');
+        router.push('/dashboard/admin/configure');
         break;
       case 'view-layouts':
-        router.push('/admin/view');
+        router.push('/dashboard/admin/view');
         break;
       default:
         break;

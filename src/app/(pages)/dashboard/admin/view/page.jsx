@@ -23,7 +23,7 @@ export default function ViewLayouts() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/dashboard/admin/')}
               className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
