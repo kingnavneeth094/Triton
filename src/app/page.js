@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import ChatWidget from '@/components/Chatbot';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,11 +81,52 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h3 className="text-3xl font-bold mb-12 text-center">Past Events</h3>
           <div className="flex gap-6 overflow-x-auto pb-6 snap-x">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="min-w-[300px] bg-gray-900 p-6 rounded-xl snap-center border border-cyan-900/30 hover:border-cyan-500/50 transition-all duration-300">
-                <div className="h-40 bg-gradient-to-br from-cyan-500/20 to-cyan-700/20 rounded-lg mb-4" />
-                <h4 className="font-semibold mb-2">Tech Symposium 2024</h4>
-                <p className="text-gray-400 text-sm">500+ Participants</p>
+            {[
+              {
+                title: "Tech Symposium 2024",
+                participants: "500+ Participants",
+                image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=1000&auto=format&fit=crop",
+                description: "Annual showcase of cutting-edge technology",
+                college: "BITS Pilani"
+              },
+              {
+                title: "AI & ML Workshop",
+                participants: "300+ Attendees",
+                image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1000&auto=format&fit=crop",
+                description: "Hands-on experience with latest AI tools",
+                college: "BMSCE"
+              },
+              {
+                title: "Cybersecurity Summit",
+                participants: "400+ Security Experts",
+                image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop",
+                description: "Advanced security protocols and practices",
+                college: "IIT Bombay"
+              },
+              {
+                title: "Cloud Computing Conference",
+                participants: "450+ Cloud Professionals",
+                image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop",
+                description: "Latest trends in cloud infrastructure",
+                college: "NITK"
+              }
+            ].map((event) => (
+              <div key={event.title} className="min-w-[300px] bg-gray-900 p-6 rounded-xl snap-center border border-cyan-900/30 hover:border-cyan-500/50 transition-all duration-300 group">
+                <div className="relative h-40 rounded-lg mb-4 overflow-hidden">
+                  <img 
+                    src={event.image} 
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-cyan-400 text-sm font-medium">{event.college}</span>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-cyan-400 text-sm">{event.participants}</span>
+                </div>
+                <h4 className="font-semibold mb-2 text-lg">{event.title}</h4>
+                <p className="text-gray-400 text-sm">{event.description}</p>
               </div>
             ))}
           </div>
@@ -166,6 +208,7 @@ export default function Home() {
           opacity: 1;
         }
       `}</style>
+      <ChatWidget/>
     </main>
   );
 }
