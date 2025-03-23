@@ -15,6 +15,7 @@ import {
   Search,
   Users,
   MapPin,
+  X,
 } from "lucide-react";
 import { useSession, signOut, signIn } from "next-auth/react";
 import { format } from 'date-fns';
@@ -26,6 +27,12 @@ export default function CoordinatorDashboard() {
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [approvedEvents, setApprovedEvents] = useState([]);
+  const [eventStats, setEventStats] = useState({
+    highestFare: { amount: 0, eventTitle: '' },
+    highestPrize: { amount: 0, eventTitle: '' }
+  });
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showEventModal, setShowEventModal] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -38,7 +45,30 @@ export default function CoordinatorDashboard() {
     }
   }, [session]);
 
+  const calculateEventStats = (events) => {
+    let highestFare = { amount: 0, eventTitle: '' };
+    let highestPrize = { amount: 0, eventTitle: '' };
 
+    events.forEach(event => {
+      // Check for highest fare (assuming there's a fare field)
+      if (event.fare && Number(event.fare) > highestFare.amount) {
+        highestFare = {
+          amount: Number(event.fare),
+          eventTitle: event.title
+        };
+      }
+
+      // Check for highest prize (assuming firstPrice is the highest prize)
+      if (event.firstPrice && Number(event.firstPrice) > highestPrize.amount) {
+        highestPrize = {
+          amount: Number(event.firstPrice),
+          eventTitle: event.title
+        };
+      }
+    });
+
+    setEventStats({ highestFare, highestPrize });
+  };
 
   const fetchPendingEvents = async () => {
     try {
@@ -71,6 +101,7 @@ export default function CoordinatorDashboard() {
       
       if (response.ok && data.success) {
         setApprovedEvents(data.events);
+        calculateEventStats(data.events);
       } else {
         console.error('Failed to fetch events:', data.message);
         setApprovedEvents([]); // Set empty array if no events found
@@ -154,6 +185,11 @@ export default function CoordinatorDashboard() {
     router.push(`/coordinator/event-details?eventId=${eventId}`);
   };
 
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setShowEventModal(true);
+  };
+
   if (session && session.user && session.user.role !== "coordinator") {
     // If not a coordinator, show restricted message
     return (
@@ -227,8 +263,8 @@ export default function CoordinatorDashboard() {
           Coordinator Dashboard
         </h1>
 
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+        {/* Action Cards and Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Add Events Card */}
           <div
             onClick={() => handleOptionClick("add-events")}
@@ -246,20 +282,41 @@ export default function CoordinatorDashboard() {
             </div>
           </div>
 
-          {/* View Analytics Card */}
-          <div
-            onClick={() => handleOptionClick("analytics")}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200">
+          {/* Highest Fare Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <BarChart3 className="h-8 w-8 text-purple-500" />
+                <Calendar className="h-8 w-8 text-blue-500" />
               </div>
               <div className="ml-4">
                 <h3 className="text-lg font-medium text-gray-900">
-                  View Analytics
+                  Highest Entry Fee
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Check event statistics and insights
+                  ₹{eventStats.highestFare.amount.toLocaleString()}
+                </p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {eventStats.highestFare.eventTitle || 'No events'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Highest Prize Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Calendar className="h-8 w-8 text-yellow-500" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Highest Cash Prize
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  ₹{eventStats.highestPrize.amount.toLocaleString()}
+                </p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {eventStats.highestPrize.eventTitle || 'No events'}
                 </p>
               </div>
             </div>
@@ -388,7 +445,7 @@ export default function CoordinatorDashboard() {
           )}
         </div>
 
-        {/* Approved Events Table */}
+        {/* Approved Events Section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Approved Events</h2>
           
@@ -401,7 +458,8 @@ export default function CoordinatorDashboard() {
               {approvedEvents.map((event) => (
                 <div
                   key={event._id}
-                  className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                  onClick={() => handleEventClick(event)}
+                  className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer transform hover:-translate-y-1 transition-transform duration-200"
                 >
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -414,8 +472,6 @@ export default function CoordinatorDashboard() {
                           <Calendar className="h-4 w-4 mr-2" />
                           <span>
                             {format(new Date(event.startDate), 'MMM dd, yyyy')}
-                            {event.endDate && event.endDate !== event.startDate && 
-                              ` - ${format(new Date(event.endDate), 'MMM dd, yyyy')}`}
                           </span>
                         </div>
                       )}
@@ -430,22 +486,122 @@ export default function CoordinatorDashboard() {
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-2" />
                         <span>
-                          {event.totalParticipants || 0}/{event.maxParticipants || '∞'} Participants
+                          {event.totalParticipants || 0}/{event.maxParticipants || '∞'}
                         </span>
                       </div>
                     </div>
-
-                    {event.description && (
-                      <p className="mt-3 text-sm text-gray-500 line-clamp-2">
-                        {event.description}
-                      </p>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Event Details Modal */}
+        {showEventModal && selectedEvent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedEvent.title}</h2>
+                  <button
+                    onClick={() => setShowEventModal(false)}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Date and Time */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Date & Time</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Start Date</p>
+                        <p className="font-medium">
+                          {format(new Date(selectedEvent.startDate), 'PPP')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">End Date</p>
+                        <p className="font-medium">
+                          {format(new Date(selectedEvent.endDate), 'PPP')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Location</h3>
+                    <p className="font-medium">{selectedEvent.RoomLocation}</p>
+                  </div>
+
+                  {/* Participants */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Participation</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Current Participants</p>
+                        <p className="font-medium">{selectedEvent.totalParticipants || 0}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Maximum Capacity</p>
+                        <p className="font-medium">{selectedEvent.maxParticipants || 'Unlimited'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {JSON.stringify(selectedEvent)}
+
+                  {/* Prizes */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Prizes</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">First Prize</p>
+                        <p className="font-medium">₹{selectedEvent.firstPrice?.toLocaleString() || 0}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Second Prize</p>
+                        <p className="font-medium">₹{selectedEvent.secondPrice?.toLocaleString() || 0}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Third Prize</p>
+                        <p className="font-medium">₹{selectedEvent.thirdPrice?.toLocaleString() || 0}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {selectedEvent.description && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-2">Description</h3>
+                      <p className="text-gray-700 whitespace-pre-wrap">
+                        {selectedEvent.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Entry Fee */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Entry Fee</h3>
+                    <p className="font-medium">₹{selectedEvent.fare?.toLocaleString() || 0}</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => setShowEventModal(false)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
