@@ -1,13 +1,10 @@
 "use client";
-
 import React from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
-import axios from "axios";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -20,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 
+const roles = ["admin", "coordinator", "organizer"];
+
 export const signInSchema = z.object({
   email: z
     .string()
@@ -29,15 +28,15 @@ export const signInSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters long")
     .max(100, "Password is too long"),
+  role: z.enum(roles, { required_error: "Please select a role" }),
 });
 
-const SignUpPage = () => {
+const Page = () => {
   const router = useRouter();
 
   const form = useForm({
-    resolver: zodResolver(signUpSchema),
+    resolver: zodResolver(signInSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
       role: "admin",
@@ -48,8 +47,9 @@ const SignUpPage = () => {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
+      role: data.role, // Sending role to backend
       redirect: false,
-      callbackUrl: "/dashboard",
+      callbackUrl: `/dashboard/${data.role}`, // Redirect to role-specific dashboard
     });
 
     if (result?.url) {
@@ -62,27 +62,13 @@ const SignUpPage = () => {
       <div className="w-full max-w-md space-y-8 px-4">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-            Create an Account
+            Welcome back to Hackathon
           </h1>
         </div>
 
         <div className="border rounded-lg p-8 bg-card shadow-sm">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                name="name"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 name="email"
                 control={form.control}
@@ -145,7 +131,7 @@ const SignUpPage = () => {
               />
 
               <Button className="w-full" type="submit">
-                Sign Up
+                Sign In
               </Button>
             </form>
           </Form>
@@ -153,9 +139,7 @@ const SignUpPage = () => {
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Not a member yet?{" "}
-              <Link
-                href="/sign-up"
-                className="font-medium text-primary hover:underline">
+              <Link href="/sign-up" className="font-medium text-primary hover:underline">
                 Sign up
               </Link>
             </p>
@@ -166,4 +150,4 @@ const SignUpPage = () => {
   );
 };
 
-export default SignUpPage;
+export default Page;

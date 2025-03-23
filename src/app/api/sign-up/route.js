@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs"; // Use bcryptjs for better Next.js compatibility
+import bcrypt from "bcryptjs";
 import userModel from "@/models/user.js";
 import dbConnect from "@/lib/dbConnect.js";
 
@@ -8,6 +8,7 @@ export async function POST(req) {
     await dbConnect();
 
     const { name, email, password, role, college, numberOfRooms } = await req.json();
+    console.log(numberOfRooms);
 
     // Check if user already exists
     const user = await userModel.findOne({ email });
@@ -22,16 +23,24 @@ export async function POST(req) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user with all fields from the schema
-    const newUser = new userModel({
+    const userData = {
       name,
       email,
       password: hashedPassword,
       role: role || "",
       college: college || "",
-      numberOfRooms: numberOfRooms || 0,
       picture: "",
       descriptions: "",
-    });
+      numberOfRooms: 0, // Add default value
+    };
+    
+    // Set numberOfRooms if provided
+    if (numberOfRooms !== undefined && numberOfRooms !== null) {
+      userData.numberOfRooms = Number(numberOfRooms);
+    }
+    
+    const newUser = new userModel(userData);
+    console.log("User to be saved:", newUser);
     
     await newUser.save();
 
