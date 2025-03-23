@@ -4,18 +4,27 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, LogOut, UserPlus, Users, Settings, Layout, Calendar, X } from 'lucide-react';
 import { useSession, signOut, signIn } from "next-auth/react";
+import axios from 'axios';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFestForm, setShowFestForm] = useState(false);
+  const [showCoordinatorForm, setShowCoordinatorForm] = useState(false);
   const [festData, setFestData] = useState({
     name: '',
     startDate: '',
     endDate: '',
     description: ''
   });
+  const [coordinatorData, setCoordinatorData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
 
   const handleLogout = () => {
     // Add your logout logic here
@@ -25,7 +34,7 @@ export default function AdminDashboard() {
   const handleOptionClick = (option) => {
     switch (option) {
       case 'create-coordinators':
-        router.push('/admin/create-coordinators');
+        setShowCoordinatorForm(true);
         break;
       case 'view-coordinators':
         router.push('/admin/view-coordinators');
@@ -49,6 +58,11 @@ export default function AdminDashboard() {
     setFestData({ ...festData, [name]: value });
   };
 
+  const handleCoordinatorInputChange = (e) => {
+    const { name, value } = e.target;
+    setCoordinatorData({ ...coordinatorData, [name]: value });
+  };
+
   const handleSubmitFest = (e) => {
     e.preventDefault();
     // Add your logic to save the fest data
@@ -65,6 +79,35 @@ export default function AdminDashboard() {
     
     // Show success message or redirect
     // For now, we'll just close the form
+  };
+
+  const handleSubmitCoordinator = async (e) => {
+    e.preventDefault();
+    setFormError('');
+    setFormSuccess('');
+    
+    try {
+      const response = await axios.post('/api/add-coordinator', coordinatorData);
+      
+      if (response.status === 201) {
+        setFormSuccess('Coordinator created successfully!');
+        // Clear the form
+        setCoordinatorData({
+          name: '',
+          email: '',
+          password: ''
+        });
+        
+        // Close the form after a delay
+        setTimeout(() => {
+          setShowCoordinatorForm(false);
+          setFormSuccess('');
+        }, 2000);
+      }
+    } catch (error) {
+      setFormError(error.response?.data?.error || 'Failed to create coordinator');
+      console.error('Error creating coordinator:', error);
+    }
   };
 
   if (session && session.user && session.user.role !== "admin") {
@@ -143,7 +186,7 @@ export default function AdminDashboard() {
           {/* Create Coordinators Card */}
           <div
             onClick={() => handleOptionClick('create-coordinators')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -159,7 +202,7 @@ export default function AdminDashboard() {
           {/* View Coordinators Card */}
           <div
             onClick={() => handleOptionClick('view-coordinators')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -175,7 +218,7 @@ export default function AdminDashboard() {
           {/* Configure Layout Card */}
           <div
             onClick={() => handleOptionClick('configure-layout')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -191,7 +234,7 @@ export default function AdminDashboard() {
           {/* View Layouts Card */}
           <div
             onClick={() => handleOptionClick('view-layouts')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -207,7 +250,7 @@ export default function AdminDashboard() {
           {/* Add Fest Card */}
           <div
             onClick={() => handleOptionClick('add-fest')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -324,6 +367,107 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Add Coordinator Modal */}
+      {showCoordinatorForm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Add New Coordinator</h2>
+              <button 
+                onClick={() => setShowCoordinatorForm(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            {formError && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {formError}
+              </div>
+            )}
+            
+            {formSuccess && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                {formSuccess}
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmitCoordinator}>
+              <div className="space-y-4">
+                {/* Coordinator Name */}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter coordinator's full name"
+                    value={coordinatorData.name}
+                    onChange={handleCoordinatorInputChange}
+                  />
+                </div>
+                
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter coordinator's email"
+                    value={coordinatorData.email}
+                    onChange={handleCoordinatorInputChange}
+                  />
+                </div>
+                
+                {/* Password */}
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter a secure password"
+                    value={coordinatorData.password}
+                    onChange={handleCoordinatorInputChange}
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowCoordinatorForm(false)}
+                  className="mr-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Add Coordinator
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      <p>{session.user.role}</p>
     </div>
   );
 }
