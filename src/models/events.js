@@ -26,6 +26,10 @@ const eventSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  pdfFile: {
+    data: Buffer, // Stores the binary content of the file
+    contentType: String, // MIME type of the file (e.g., 'application/pdf')
+  },
 });
 
 // Prevent duplicate model registration
