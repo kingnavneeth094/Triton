@@ -1,39 +1,88 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { LogOut, Calendar, PlusCircle, Trash2, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  LogOut,
+  Calendar,
+  PlusCircle,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  BarChart3,
+} from "lucide-react";
+import { useSession, signOut, signIn } from "next-auth/react";
 
 export default function CoordinatorDashboard() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: session } = useSession();
 
   const handleLogout = () => {
     // Add your logout logic here
-    router.push('/sign-in');
+    router.push("/sign-in");
   };
 
   const handleOptionClick = (option) => {
     switch (option) {
-      case 'view-events':
-        router.push('/coordinator/view-events');
+      case "view-events":
+        router.push("/coordinator/view-events");
         break;
-      case 'add-events':
-        router.push('/coordinator/add-events');
+      case "add-events":
+        router.push("/coordinator/add-events");
         break;
-      case 'delete-events':
-        router.push('/coordinator/delete-events');
+      case "delete-events":
+        router.push("/coordinator/delete-events");
         break;
-      case 'approve-events':
-        router.push('/coordinator/approve-events');
+      case "approve-events":
+        router.push("/coordinator/approve-events");
         break;
-      case 'analytics':
-        router.push('/coordinator/analytics');
+      case "analytics":
+        router.push("/coordinator/analytics");
         break;
       default:
         break;
     }
   };
+
+  if (session && session.user && session.user.role !== "coordinator") {
+    // If not an organizer, show restricted message
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-center text-red-600">
+            Access Restricted
+          </h1>
+          <p className="text-center text-gray-600">
+            This dashboard is only available to Coordinator. Please sign in with
+            an organizer account.
+          </p>
+          <div className="flex justify-center">
+            <button
+              onClick={() => signIn()}
+              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+        <p>No user found</p>
+        <button
+          onClick={() => signIn()}
+          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          Sign In
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,11 +117,13 @@ export default function CoordinatorDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Coordinator Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">
+          Coordinator Dashboard
+        </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* View Events Card */}
           <div
-            onClick={() => handleOptionClick('view-events')}
+            onClick={() => handleOptionClick("view-events")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
           >
             <div className="flex items-center">
@@ -80,15 +131,19 @@ export default function CoordinatorDashboard() {
                 <Calendar className="h-8 w-8 text-blue-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">View Events</h3>
-                <p className="mt-1 text-sm text-gray-500">Browse and manage all events</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  View Events
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Browse and manage all events
+                </p>
               </div>
             </div>
           </div>
 
           {/* Add Events Card */}
           <div
-            onClick={() => handleOptionClick('add-events')}
+            onClick={() => handleOptionClick("add-events")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
           >
             <div className="flex items-center">
@@ -96,7 +151,9 @@ export default function CoordinatorDashboard() {
                 <PlusCircle className="h-8 w-8 text-green-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Add Events</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Add Events
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">Create new events</p>
               </div>
             </div>
@@ -104,7 +161,7 @@ export default function CoordinatorDashboard() {
 
           {/* Delete Events Card */}
           <div
-            onClick={() => handleOptionClick('delete-events')}
+            onClick={() => handleOptionClick("delete-events")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
           >
             <div className="flex items-center">
@@ -112,15 +169,19 @@ export default function CoordinatorDashboard() {
                 <Trash2 className="h-8 w-8 text-red-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Delete Events</h3>
-                <p className="mt-1 text-sm text-gray-500">Remove existing events</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Events
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Remove existing events
+                </p>
               </div>
             </div>
           </div>
 
           {/* Approve/Reject Events Card */}
           <div
-            onClick={() => handleOptionClick('approve-events')}
+            onClick={() => handleOptionClick("approve-events")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
           >
             <div className="flex items-center">
@@ -128,15 +189,19 @@ export default function CoordinatorDashboard() {
                 <CheckCircle className="h-8 w-8 text-yellow-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Approve/Reject Events</h3>
-                <p className="mt-1 text-sm text-gray-500">Review and manage event requests</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Approve/Reject Events
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Review and manage event requests
+                </p>
               </div>
             </div>
           </div>
 
           {/* View Analytics Card */}
           <div
-            onClick={() => handleOptionClick('analytics')}
+            onClick={() => handleOptionClick("analytics")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
           >
             <div className="flex items-center">
@@ -144,8 +209,12 @@ export default function CoordinatorDashboard() {
                 <BarChart3 className="h-8 w-8 text-purple-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">View Analytics</h3>
-                <p className="mt-1 text-sm text-gray-500">Check event statistics and insights</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  View Analytics
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Check event statistics and insights
+                </p>
               </div>
             </div>
           </div>

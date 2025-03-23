@@ -131,30 +131,30 @@ export default function OrganizerDashboard() {
 
   // Check if user has organizer role
 
-    if (session && session.user && session.user.role !== "organizer") {
-      // If not an organizer, show restricted message
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-          <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-center text-red-600">
-              Access Restricted
-            </h1>
-            <p className="text-center text-gray-600">
-              This dashboard is only available to organizers. Please sign in
-              with an organizer account.
-            </p>
-            <div className="flex justify-center">
-              <button
-                onClick={() => signIn()}
-                className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                Sign In
-              </button>
-            </div>
+  if (session && session.user && session.user.role !== "organizer") {
+    // If not an organizer, show restricted message
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-center text-red-600">
+            Access Restricted
+          </h1>
+          <p className="text-center text-gray-600">
+            This dashboard is only available to organizers. Please sign in with
+            an organizer account.
+          </p>
+          <div className="flex justify-center">
+            <button
+              onClick={() => signIn()}
+              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              Sign In
+            </button>
           </div>
         </div>
-      );
-    }
-
+      </div>
+    );
+  }
 
   if (!session) {
     return (
@@ -162,7 +162,8 @@ export default function OrganizerDashboard() {
         <p>No user found</p>
         <button
           onClick={() => signIn()}
-          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
           Sign In
         </button>
       </div>
@@ -171,46 +172,18 @@ export default function OrganizerDashboard() {
 
   return (
     <div className="container mx-auto p-6">
-      <p>Signed in as {JSON.stringify(session)}</p>
-      <button className="bg-green-400" onClick={() => signOut()}>
-        Sign out
-      </button>
-      <h1 className="text-3xl font-bold mb-6">Organizer Dashboard</h1>
+      {/* Header with Sign Out button */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Organizer Dashboard</h1>
+        <button 
+          onClick={() => signOut()} 
+          className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center"
+        >
+          Sign out
+        </button>
+      </div>
 
-      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Total Events</CardTitle>
-            <CardDescription>Your created events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{events.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Total Participants</CardTitle>
-            <CardDescription>Across all events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {events.reduce((sum, event) => sum + event.totalParticipants, 0)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Available Rooms</CardTitle>
-            <CardDescription>For event hosting</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{user.numberOfRooms}</div>
-          </CardContent>
-        </Card>
-      </div> */}
-
+      {/* Main Content */}
       <Tabs defaultValue="events" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="events">My Events</TabsTrigger>
@@ -219,7 +192,8 @@ export default function OrganizerDashboard() {
             disabled={events.some(
               (event) =>
                 event.status === "pending" || event.status === "accepted"
-            )}>
+            )}
+          >
             Create Event
           </TabsTrigger>
           {/* <TabsTrigger value="profile">Profile</TabsTrigger> */}
@@ -284,7 +258,8 @@ export default function OrganizerDashboard() {
                                 : event.status === "rejected"
                                 ? "bg-red-100 text-red-800"
                                 : "bg-gray-100 text-gray-800"
-                            }>
+                            }
+                          >
                             {event.status
                               ? event.status.charAt(0).toUpperCase() +
                                 event.status.slice(1)
@@ -296,7 +271,8 @@ export default function OrganizerDashboard() {
                             variant="outline"
                             size="sm"
                             disabled={!isActionEnabled(event.status)}
-                            onClick={() => handleViewClick(event)}>
+                            onClick={() => handleViewClick(event)}
+                          >
                             {event.status === "accepted" ? (
                               <Users className="mr-2 h-4 w-4" />
                             ) : null}
@@ -356,7 +332,8 @@ export default function OrganizerDashboard() {
                     console.error("Error submitting event:", error);
                     alert("An error occurred while creating the event");
                   }
-                }}>
+                }}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="title">Event Title</Label>
@@ -449,7 +426,8 @@ export default function OrganizerDashboard() {
                           disabled={
                             selectedEvent &&
                             isFormDisabled(selectedEvent.status)
-                          }>
+                          }
+                        >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {startDate ? format(startDate, "PPP") : "Select date"}
                         </Button>
@@ -480,7 +458,8 @@ export default function OrganizerDashboard() {
                           disabled={
                             selectedEvent &&
                             isFormDisabled(selectedEvent.status)
-                          }>
+                          }
+                        >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {endDate ? format(endDate, "PPP") : "Select date"}
                         </Button>
@@ -524,7 +503,8 @@ export default function OrganizerDashboard() {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={
                       selectedEvent && isFormDisabled(selectedEvent.status)
-                    }>
+                    }
+                  >
                     <option value="">Select a location</option>
                     {roomLocations.map((location) => (
                       <option key={location} value={location}>
@@ -543,7 +523,8 @@ export default function OrganizerDashboard() {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={
                       selectedEvent && isFormDisabled(selectedEvent.status)
-                    }>
+                    }
+                  >
                     <option value="">Select a location</option>
                     {roomLocations.map((location) => (
                       <option key={location} value={location}>
@@ -558,7 +539,8 @@ export default function OrganizerDashboard() {
                   className="w-full"
                   disabled={
                     selectedEvent && isFormDisabled(selectedEvent.status)
-                  }>
+                  }
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Event
                 </Button>
@@ -660,6 +642,14 @@ export default function OrganizerDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Session Info at the bottom */}
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+        <p className="text-sm text-gray-600">Session Information:</p>
+        <pre className="mt-2 p-2 bg-white rounded border text-sm overflow-x-auto">
+          {JSON.stringify(session, null, 2)}
+        </pre>
+      </div>
     </div>
   );
 }

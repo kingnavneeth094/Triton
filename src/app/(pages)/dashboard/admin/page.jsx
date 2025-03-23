@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, LogOut, UserPlus, Users, Settings, Layout, Calendar, X } from 'lucide-react';
+import { useSession, signOut, signIn } from "next-auth/react";
 
 export default function AdminDashboard() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFestForm, setShowFestForm] = useState(false);
@@ -64,6 +66,45 @@ export default function AdminDashboard() {
     // Show success message or redirect
     // For now, we'll just close the form
   };
+
+  if (session && session.user && session.user.role !== "admin") {
+    // If not an organizer, show restricted message
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-center text-red-600">
+            Access Restricted
+          </h1>
+          <p className="text-center text-gray-600">
+            This dashboard is only available to organizers. Please sign in with
+            an organizer account.
+          </p>
+          <div className="flex justify-center">
+            <button
+              onClick={() => signIn()}
+              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+        <p>No user found</p>
+        <button
+          onClick={() => signIn()}
+          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          Sign In
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
