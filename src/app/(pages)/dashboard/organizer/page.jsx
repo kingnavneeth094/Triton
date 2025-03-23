@@ -36,7 +36,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { CalendarIcon, PlusCircle, Users } from "lucide-react";
+import { CalendarIcon, PlusCircle, Users, Upload, File, X } from "lucide-react";
 import { useSession, signOut, signIn } from "next-auth/react";
 
 export default function OrganizerDashboard() {
@@ -45,6 +45,9 @@ export default function OrganizerDashboard() {
   const [endDate, setEndDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showParticipants, setShowParticipants] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadError, setUploadError] = useState("");
 
   // room locations available
   const roomLocations = ["Room 1", "Room 2", "Room 3", "Room 4"];
@@ -129,6 +132,19 @@ export default function OrganizerDashboard() {
     }
   };
 
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type === "application/pdf") {
+        setSelectedFile(file);
+        setUploadError("");
+      } else {
+        setUploadError("Please upload a PDF file only");
+        setSelectedFile(null);
+      }
+    }
+  };
+
   // Check if user has organizer role
 
   if (session && session.user && session.user.role !== "organizer") {
@@ -175,8 +191,8 @@ export default function OrganizerDashboard() {
       {/* Header with Sign Out button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Organizer Dashboard</h1>
-        <button 
-          onClick={() => signOut()} 
+        <button
+          onClick={() => signOut()}
           className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center"
         >
           Sign out
@@ -267,17 +283,29 @@ export default function OrganizerDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={!isActionEnabled(event.status)}
-                            onClick={() => handleViewClick(event)}
-                          >
-                            {event.status === "accepted" ? (
-                              <Users className="mr-2 h-4 w-4" />
-                            ) : null}
-                            View
-                          </Button>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={!isActionEnabled(event.status)}
+                              onClick={() => handleViewClick(event)}
+                            >
+                              {event.status === "accepted" ? (
+                                <Users className="mr-2 h-4 w-4" />
+                              ) : null}
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedEvent(event);
+                                setShowRulesModal(true);
+                              }}
+                            >
+                              Add Rules
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -650,6 +678,126 @@ export default function OrganizerDashboard() {
           {JSON.stringify(session, null, 2)}
         </pre>
       </div>
+
+      {showRulesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-[2px] overflow-y-auto h-full w-full flex items-center justify-center z-50">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Upload Rules</h2>
+              <button
+                onClick={() => {
+                  setShowRulesModal(false);
+                  setSelectedFile(null);
+                  setUploadError("");
+                }}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+
+                if (!selectedFile) {
+                  setUploadError("Please select a file");
+                  return;
+                }
+
+                const formData = new FormData();
+                formData.append("pdfFile", selectedFile);
+                formData.append("eventId", selectedEvent._id); // Send event ID instead of title
+                console.log(selectedEvent._id); // Log the event ID
+
+                try {
+                  const response = await fetch("/api/upload-rules", {
+                    method: "POST",
+                    body: formData,
+                  });
+                  console.log(formData)
+
+                  if (response.ok) {
+                    alert("Rules uploaded successfully!");
+                    setShowRulesModal(false);
+                    setSelectedFile(null);
+                    setUploadError("");
+                  } else {
+                    const error = await response.json();
+                    setUploadError(error.error || "Failed to upload rules");
+                  }
+                } catch (error) {
+                  console.error("Error uploading rules:", error);
+                  setUploadError("An error occurred while uploading rules");
+                }
+              }}
+            >
+              <div className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors"
+                  >
+                    {selectedFile ? (
+                      <div className="flex flex-col items-center">
+                        <File className="h-12 w-12 text-gray-400" />
+                        <span className="mt-2 text-sm font-medium text-gray-900">
+                          {selectedFile.name}
+                        </span>
+                        <span className="mt-1 text-xs text-gray-500">
+                          Click to change file
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Upload className="h-12 w-12 text-gray-400" />
+                        <span className="mt-2 text-sm font-medium text-gray-900">
+                          Click to upload PDF file
+                        </span>
+                        <span className="mt-1 text-xs text-gray-500">
+                          PDF files only
+                        </span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+
+                {uploadError && (
+                  <p className="text-sm text-red-600">{uploadError}</p>
+                )}
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRulesModal(false);
+                      setSelectedFile(null);
+                      setUploadError("");
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    disabled={!selectedFile}
+                  >
+                    Upload Rules
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
