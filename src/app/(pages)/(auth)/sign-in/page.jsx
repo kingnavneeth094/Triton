@@ -62,7 +62,7 @@ const Page = () => {
       <div className="w-full max-w-md space-y-8 px-4">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-            Welcome back to Hackathon
+            Welcome to Triton
           </h1>
         </div>
 
@@ -90,7 +90,11 @@ const Page = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -105,12 +109,12 @@ const Page = () => {
                     <FormLabel>Select Role</FormLabel>
                     <div className="grid grid-cols-3 gap-2">
                       {roles.map((role) => (
-                        <label 
-                          key={role} 
+                        <label
+                          key={role}
                           className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
-                            field.value === role 
-                              ? 'bg-primary text-primary-foreground border-primary' 
-                              : 'bg-muted hover:bg-muted/80 border-muted-foreground/20'
+                            field.value === role
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-muted hover:bg-muted/80 border-muted-foreground/20"
                           }`}
                           onClick={() => field.onChange(role)}
                         >
@@ -139,7 +143,10 @@ const Page = () => {
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Not a member yet?{" "}
-              <Link href="/sign-up" className="font-medium text-primary hover:underline">
+              <Link
+                href="/sign-up"
+                className="font-medium text-primary hover:underline"
+              >
                 Sign up
               </Link>
             </p>
