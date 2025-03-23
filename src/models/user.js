@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { boolean } from "zod";
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -10,10 +11,21 @@ const userSchema = new mongoose.Schema({
     default: "",
   },
   college: { type: String, default: "" },
-  numberOfRooms: { type: Number, default: 0 },
-  picture: { type: String, default: "" }, // AWS S3 Link
-  descriptions: { type: String, default: "" }, // Array of descriptions
+  prefferedLocation: { type: String, default: "" },
+  picture: { type: String, default: "" },
+  descriptions: { type: String, default: "" },
+  rooms: [
+    {
+      name: { type: String, required: true },
+      roomNumber: { type: Number, required: true, unique: true, index: true },
+    }
+  ],
   createdAt: { type: Date, default: Date.now },
+  events: [
+    {
+      event: { type: Schema.Types.ObjectId, ref: "Event" },
+    },
+  ],
 });
 
 // Prevent duplicate model registration
