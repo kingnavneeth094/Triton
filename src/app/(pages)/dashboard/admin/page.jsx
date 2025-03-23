@@ -37,7 +37,7 @@ export default function AdminDashboard() {
         setShowCoordinatorForm(true);
         break;
       case 'view-coordinators':
-        router.push('/admin/view-coordinators');
+        router.push('/dashboard/admin/coordinators');
         break;
       case 'configure-layout':
         router.push('/dashboard/admin/configure');

@@ -13,8 +13,11 @@ import {
   Edit,
   Trash,
   Search,
+  Users,
+  MapPin,
 } from "lucide-react";
 import { useSession, signOut, signIn } from "next-auth/react";
+import { format } from 'date-fns';
 
 export default function CoordinatorDashboard() {
   const router = useRouter();
@@ -30,80 +33,12 @@ export default function CoordinatorDashboard() {
       fetchApprovedEvents();
     } else {
       // Load dummy data for development
-      setDummyData();
-      setLoading(false);
+      // setDummyData();
+      // setLoading(false);
     }
   }, [session]);
 
-  const setDummyData = () => {
-    // Dummy pending events
-    setPendingEvents([
-      {
-        _id: "pe1",
-        title: "Annual Tech Conference",
-        description: "A conference showcasing the latest technology trends and innovations in the industry.",
-        organizer: { name: "John Doe", email: "john.doe@example.com" },
-        startDate: new Date("2023-12-15T09:00:00"),
-        endDate: new Date("2023-12-15T17:00:00"),
-        RoomLocation: "Main Auditorium",
-        status: "pending"
-      },
-      {
-        _id: "pe2",
-        title: "Career Fair",
-        description: "Connect students with potential employers and explore career opportunities.",
-        organizer: { name: "Jane Smith", email: "jane.smith@example.com" },
-        startDate: new Date("2023-12-20T10:00:00"),
-        endDate: new Date("2023-12-20T15:00:00"),
-        RoomLocation: "Exhibition Hall",
-        status: "pending"
-      },
-      {
-        _id: "pe3",
-        title: "Workshop on AI",
-        description: "Learn about artificial intelligence and its applications in various fields.",
-        organizer: { name: "Robert Johnson", email: "robert.j@example.com" },
-        startDate: new Date("2023-12-22T13:00:00"),
-        endDate: new Date("2023-12-22T16:00:00"),
-        RoomLocation: "Room 101",
-        status: "pending"
-      }
-    ]);
 
-    // Dummy approved events
-    setApprovedEvents([
-      {
-        _id: "ae1",
-        title: "Alumni Networking Event",
-        description: "Connect with alumni and build professional relationships for future opportunities.",
-        organizer: { name: "Michael Brown", email: "michael.b@example.com" },
-        startDate: new Date("2023-12-10T18:00:00"),
-        endDate: new Date("2023-12-10T21:00:00"),
-        RoomLocation: "Grand Hall",
-        status: "approved"
-      },
-      {
-        _id: "ae2",
-        title: "Research Symposium",
-        description: "Showcase research projects and findings from various departments.",
-        organizer: { name: "Sarah Wilson", email: "sarah.w@example.com" },
-        startDate: new Date("2023-12-12T09:00:00"),
-        endDate: new Date("2023-12-12T16:00:00"),
-        RoomLocation: "Science Building",
-        status: "approved"
-      },
-      {
-        _id: "ae3",
-        title: "Cultural Festival",
-        description: "Celebrate diversity with performances, food, and activities from different cultures.",
-        organizer: { name: "David Lee", email: "david.l@example.com" },
-        startDate: new Date("2023-12-18T11:00:00"),
-        endDate: new Date("2023-12-18T20:00:00"),
-        RoomLocation: "Campus Quad",
-        status: "approved"
-      }
-    ]);
-  };
 
   const fetchPendingEvents = async () => {
     try {
@@ -120,12 +55,10 @@ export default function CoordinatorDashboard() {
       } else {
         console.error("Failed to fetch events:", data.error);
         // Load dummy data if API fails
-        setDummyData();
       }
     } catch (error) {
       console.error("Error fetching events:", error);
       // Load dummy data if API fails
-      setDummyData();
     } finally {
       setLoading(false);
     }
@@ -133,62 +66,20 @@ export default function CoordinatorDashboard() {
 
   const fetchApprovedEvents = async () => {
     try {
-      const response = await fetch("/api/get-admin-pending-events");
+      const response = await fetch('/api/view-events');
       const data = await response.json();
-
-      if (response.ok) {
+      
+      if (response.ok && data.success) {
         setApprovedEvents(data.events);
       } else {
-        console.error("Failed to fetch approved events:", data.error);
-        // Use dummy approved events if API fails
-        setApprovedEvents([
-          {
-            _id: "ae1",
-            title: "Alumni Networking Event",
-            description: "Connect with alumni and build professional relationships for future opportunities.",
-            organizer: { name: "Michael Brown", email: "michael.b@example.com" },
-            startDate: new Date("2023-12-10T18:00:00"),
-            endDate: new Date("2023-12-10T21:00:00"),
-            RoomLocation: "Grand Hall",
-            status: "approved"
-          },
-          {
-            _id: "ae2",
-            title: "Research Symposium",
-            description: "Showcase research projects and findings from various departments.",
-            organizer: { name: "Sarah Wilson", email: "sarah.w@example.com" },
-            startDate: new Date("2023-12-12T09:00:00"),
-            endDate: new Date("2023-12-12T16:00:00"),
-            RoomLocation: "Science Building",
-            status: "approved"
-          }
-        ]);
+        console.error('Failed to fetch events:', data.message);
+        setApprovedEvents([]); // Set empty array if no events found
       }
     } catch (error) {
-      console.error("Error fetching approved events:", error);
-      // Use dummy approved events if API fails
-      setApprovedEvents([
-        {
-          _id: "ae1",
-          title: "Alumni Networking Event",
-          description: "Connect with alumni and build professional relationships for future opportunities.",
-          organizer: { name: "Michael Brown", email: "michael.b@example.com" },
-          startDate: new Date("2023-12-10T18:00:00"),
-          endDate: new Date("2023-12-10T21:00:00"),
-          RoomLocation: "Grand Hall",
-          status: "approved"
-        },
-        {
-          _id: "ae2",
-          title: "Research Symposium",
-          description: "Showcase research projects and findings from various departments.",
-          organizer: { name: "Sarah Wilson", email: "sarah.w@example.com" },
-          startDate: new Date("2023-12-12T09:00:00"),
-          endDate: new Date("2023-12-12T16:00:00"),
-          RoomLocation: "Science Building",
-          status: "approved"
-        }
-      ]);
+      console.error('Error fetching events:', error);
+      setApprovedEvents([]); // Set empty array on error
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -498,111 +389,60 @@ export default function CoordinatorDashboard() {
         </div>
 
         {/* Approved Events Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg mt-8">
-          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <h2 className="text-lg leading-6 font-medium text-gray-900">
-              Approved Events
-            </h2>
-            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              {approvedEvents?.length || 0} approved
-            </span>
-          </div>
-
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Approved Events</h2>
+          
           {loading ? (
-            <div className="text-center py-4">
-              <p>Loading events...</p>
-            </div>
-          ) : approvedEvents?.length === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-gray-500">No approved events found</p>
-            </div>
+            <div className="text-center py-4">Loading events...</div>
+          ) : approvedEvents.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">No approved events found</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Event
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Organizer
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {approvedEvents?.map((event) => (
-                    <tr key={event._id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {event.title}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {approvedEvents.map((event) => (
+                <div
+                  key={event._id}
+                  className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {event.title}
+                    </h3>
+                    
+                    <div className="space-y-2 text-sm text-gray-600">
+                      {event.startDate && (
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          <span>
+                            {format(new Date(event.startDate), 'MMM dd, yyyy')}
+                            {event.endDate && event.endDate !== event.startDate && 
+                              ` - ${format(new Date(event.endDate), 'MMM dd, yyyy')}`}
+                          </span>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {event.description.substring(0, 50)}...
+                      )}
+                      
+                      {event.RoomLocation && (
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          <span>{event.RoomLocation}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {event.organizer?.name || "Unknown"}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {event.organizer?.email || "No email"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {new Date(event.startDate).toLocaleDateString()}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(event.startDate).toLocaleTimeString()} -{" "}
-                          {new Date(event.endDate).toLocaleTimeString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {event.RoomLocation || "Not specified"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          Approved
+                      )}
+                      
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-2" />
+                        <span>
+                          {event.totalParticipants || 0}/{event.maxParticipants || '∞'} Participants
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleViewEvent(event._id)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="View Details">
-                            <Eye className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+
+                    {event.description && (
+                      <p className="mt-3 text-sm text-gray-500 line-clamp-2">
+                        {event.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
