@@ -27,6 +27,9 @@ export default function ChatWidget() {
           --df-messenger-message-user-background: #000;
           --df-messenger-message-bot-background: #000;
           --df-messenger-input-placeholder-font-color: #fff;
+          --df-messenger-input-box-color: #fff;
+          --df-messenger-input-background: #000;
+          --df-messenger-chat-bubble-background: #06b6d4; /* Cyan color */
           bottom: 16px;
           right: 16px;
         }

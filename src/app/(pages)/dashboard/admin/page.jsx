@@ -1,51 +1,103 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, LogOut, UserPlus, Users, Settings, Layout, Calendar, X } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  LogOut,
+  UserPlus,
+  Users,
+  Settings,
+  Layout,
+  Calendar,
+  X,
+} from "lucide-react";
 import { useSession, signOut, signIn } from "next-auth/react";
-import axios from 'axios';
+import axios from "axios";
+
+import { TrendingUp } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
+const chartData = [
+  { event: "Hackathon", participants: 210 },
+  { event: "Coding Challenge", participants: 175 },
+  { event: "CTF (Capture The Flag)", participants: 142 },
+  { event: "AI/ML Workshop", participants: 190 },
+  { event: "Tech Quiz", participants: 160 },
+  { event: "UI/UX Design Contest", participants: 130 },
+  { event: "Robotics Competition", participants: 155 },
+  { event: "Game Development Jam", participants: 140 },
+  { event: "Blockchain Seminar", participants: 115 },
+  { event: "Cybersecurity Workshop", participants: 180 },
+  { event: "Cloud Computing Bootcamp", participants: 145 },
+  { event: "Data Science Challenge", participants: 170 },
+  { event: "Full-Stack Development Sprint", participants: 135 },
+  { event: "AR/VR Development Challenge", participants: 120 },
+  { event: "IoT Innovation Contest", participants: 125 },
+];
+
+
+
+const chartConfig = {
+  participants: {
+    label: "Participants",
+    color: "hsl(var(--chart-1))",
+  },
+};
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showFestForm, setShowFestForm] = useState(false);
   const [showCoordinatorForm, setShowCoordinatorForm] = useState(false);
   const [festData, setFestData] = useState({
-    name: '',
-    startDate: '',
-    endDate: '',
-    description: ''
+    name: "",
+    startDate: "",
+    endDate: "",
+    description: "",
   });
   const [coordinatorData, setCoordinatorData] = useState({
-    name: '',
-    email: '',
-    password: ''
+    name: "",
+    email: "",
+    password: "",
   });
-  const [formError, setFormError] = useState('');
-  const [formSuccess, setFormSuccess] = useState('');
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    router.push('/login');
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.replace("/");
   };
 
   const handleOptionClick = (option) => {
     switch (option) {
-      case 'create-coordinators':
+      case "create-coordinators":
         setShowCoordinatorForm(true);
         break;
-      case 'view-coordinators':
-        router.push('/dashboard/admin/coordinators');
+      case "view-coordinators":
+        router.push("/dashboard/admin/coordinators");
         break;
-      case 'configure-layout':
-        router.push('/dashboard/admin/configure');
+      case "configure-layout":
+        router.push("/dashboard/admin/configure");
         break;
-      case 'view-layouts':
-        router.push('/dashboard/admin/view');
+      case "view-layouts":
+        router.push("/dashboard/admin/view");
         break;
-      case 'add-fest':
+      case "add-fest":
         setShowFestForm(true);
         break;
       default:
@@ -66,47 +118,52 @@ export default function AdminDashboard() {
   const handleSubmitFest = (e) => {
     e.preventDefault();
     // Add your logic to save the fest data
-    console.log('Submitting fest data:', festData);
-    
+    console.log("Submitting fest data:", festData);
+
     // Clear the form and close it
     setFestData({
-      name: '',
-      startDate: '',
-      endDate: '',
-      description: ''
+      name: "",
+      startDate: "",
+      endDate: "",
+      description: "",
     });
     setShowFestForm(false);
-    
+
     // Show success message or redirect
     // For now, we'll just close the form
   };
 
   const handleSubmitCoordinator = async (e) => {
     e.preventDefault();
-    setFormError('');
-    setFormSuccess('');
-    
+    setFormError("");
+    setFormSuccess("");
+
     try {
-      const response = await axios.post('/api/add-coordinator', coordinatorData);
-      
+      const response = await axios.post(
+        "/api/add-coordinator",
+        coordinatorData
+      );
+
       if (response.status === 201) {
-        setFormSuccess('Coordinator created successfully!');
+        setFormSuccess("Coordinator created successfully!");
         // Clear the form
         setCoordinatorData({
-          name: '',
-          email: '',
-          password: ''
+          name: "",
+          email: "",
+          password: "",
         });
-        
+
         // Close the form after a delay
         setTimeout(() => {
           setShowCoordinatorForm(false);
-          setFormSuccess('');
+          setFormSuccess("");
         }, 2000);
       }
     } catch (error) {
-      setFormError(error.response?.data?.error || 'Failed to create coordinator');
-      console.error('Error creating coordinator:', error);
+      setFormError(
+        error.response?.data?.error || "Failed to create coordinator"
+      );
+      console.error("Error creating coordinator:", error);
     }
   };
 
@@ -125,8 +182,7 @@ export default function AdminDashboard() {
           <div className="flex justify-center">
             <button
               onClick={() => signIn()}
-              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
+              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
               Sign In
             </button>
           </div>
@@ -141,8 +197,7 @@ export default function AdminDashboard() {
         <p>No user found</p>
         <button
           onClick={() => signIn()}
-          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        >
+          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
           Sign In
         </button>
       </div>
@@ -171,8 +226,7 @@ export default function AdminDashboard() {
             </div>
             <button
               onClick={handleLogout}
-              className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            >
+              className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
               <LogOut className="mr-2 h-5 w-5" />
               Logout
             </button>
@@ -182,86 +236,71 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           {/* Create Coordinators Card */}
           <div
-            onClick={() => handleOptionClick('create-coordinators')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <UserPlus className="h-8 w-8 text-blue-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Create Coordinators</h3>
-                <p className="mt-1 text-sm text-gray-500">Add new coordinators to the system</p>
-              </div>
-            </div>
+            onClick={() => handleOptionClick("create-coordinators")}
+            className="bg-white rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200 w-56 h-56 flex flex-col items-center justify-center">
+            <UserPlus className="h-12 w-12 text-blue-500 mb-3" />
+            <h3 className="text-lg font-medium text-gray-900 text-center">
+              Create Coordinators
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              Add new coordinators to the system
+            </p>
           </div>
 
           {/* View Coordinators Card */}
           <div
-            onClick={() => handleOptionClick('view-coordinators')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Users className="h-8 w-8 text-green-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">View Coordinators</h3>
-                <p className="mt-1 text-sm text-gray-500">Manage and view existing coordinators</p>
-              </div>
-            </div>
+            onClick={() => handleOptionClick("view-coordinators")}
+            className="bg-white rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200 w-56 h-56 flex flex-col items-center justify-center">
+            <Users className="h-12 w-12 text-green-500 mb-3" />
+            <h3 className="text-lg font-medium text-gray-900 text-center">
+              View Coordinators
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              Manage and view existing coordinators
+            </p>
           </div>
 
           {/* Configure Layout Card */}
           <div
-            onClick={() => handleOptionClick('configure-layout')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Settings className="h-8 w-8 text-purple-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Configure Layout</h3>
-                <p className="mt-1 text-sm text-gray-500">Set up and manage room layouts</p>
-              </div>
-            </div>
+            onClick={() => handleOptionClick("configure-layout")}
+            className="bg-white rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200 w-56 h-56 flex flex-col items-center justify-center">
+            <Settings className="h-12 w-12 text-purple-500 mb-3" />
+            <h3 className="text-lg font-medium text-gray-900 text-center">
+              Configure Layout
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              Set up and manage room layouts
+            </p>
           </div>
 
           {/* View Layouts Card */}
           <div
-            onClick={() => handleOptionClick('view-layouts')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Layout className="h-8 w-8 text-orange-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">View Layouts</h3>
-                <p className="mt-1 text-sm text-gray-500">View and manage room layouts</p>
-              </div>
-            </div>
+            onClick={() => handleOptionClick("view-layouts")}
+            className="bg-white rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200 w-56 h-56 flex flex-col items-center justify-center">
+            <Layout className="h-12 w-12 text-orange-500 mb-3" />
+            <h3 className="text-lg font-medium text-gray-900 text-center">
+              View Layouts
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              View and manage room layouts
+            </p>
           </div>
 
           {/* Add Fest Card */}
-          <div
-            onClick={() => handleOptionClick('add-fest')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Calendar className="h-8 w-8 text-teal-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Add Fest</h3>
-                <p className="mt-1 text-sm text-gray-500">Create and configure new fests</p>
-              </div>
-            </div>
-          </div>
+          {/* <div
+            onClick={() => handleOptionClick("add-fest")}
+            className="bg-white rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200 w-56 h-56 flex flex-col items-center justify-center">
+            <Calendar className="h-12 w-12 text-teal-500 mb-3" />
+            <h3 className="text-lg font-medium text-gray-900 text-center">
+              Add Fest
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              Create and configure new fests
+            </p>
+          </div> */}
         </div>
       </div>
 
@@ -271,19 +310,20 @@ export default function AdminDashboard() {
           <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Add New Fest</h2>
-              <button 
+              <button
                 onClick={() => setShowFestForm(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
+                className="text-gray-400 hover:text-gray-500">
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmitFest}>
               <div className="space-y-4">
                 {/* Fest Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700">
                     Fest Name
                   </label>
                   <input
@@ -297,10 +337,12 @@ export default function AdminDashboard() {
                     onChange={handleInputChange}
                   />
                 </div>
-                
+
                 {/* Start Date */}
                 <div>
-                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-gray-700">
                     Start Date
                   </label>
                   <input
@@ -313,10 +355,12 @@ export default function AdminDashboard() {
                     onChange={handleInputChange}
                   />
                 </div>
-                
+
                 {/* End Date */}
                 <div>
-                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-medium text-gray-700">
                     End Date
                   </label>
                   <input
@@ -329,10 +373,12 @@ export default function AdminDashboard() {
                     onChange={handleInputChange}
                   />
                 </div>
-                
+
                 {/* Description */}
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700">
                     Description
                   </label>
                   <textarea
@@ -347,19 +393,17 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setShowFestForm(false)}
-                  className="mr-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+                  className="mr-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Add Fest
                 </button>
               </div>
@@ -373,32 +417,35 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
           <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add New Coordinator</h2>
-              <button 
+              <h2 className="text-xl font-bold text-gray-900">
+                Add New Coordinator
+              </h2>
+              <button
                 onClick={() => setShowCoordinatorForm(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
+                className="text-gray-400 hover:text-gray-500">
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             {formError && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                 {formError}
               </div>
             )}
-            
+
             {formSuccess && (
               <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
                 {formSuccess}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmitCoordinator}>
               <div className="space-y-4">
                 {/* Coordinator Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700">
                     Full Name
                   </label>
                   <input
@@ -412,10 +459,12 @@ export default function AdminDashboard() {
                     onChange={handleCoordinatorInputChange}
                   />
                 </div>
-                
+
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700">
                     Email
                   </label>
                   <input
@@ -429,10 +478,12 @@ export default function AdminDashboard() {
                     onChange={handleCoordinatorInputChange}
                   />
                 </div>
-                
+
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700">
                     Password
                   </label>
                   <input
@@ -447,19 +498,17 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setShowCoordinatorForm(false)}
-                  className="mr-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+                  className="mr-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Add Coordinator
                 </button>
               </div>
@@ -467,7 +516,52 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-      <p>{session.user.role}</p>
+      <div className="p-4 max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Participation</CardTitle>
+            <CardDescription>
+              Showing participant count for literary events
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig}>
+              <BarChart
+                accessibilityLayer
+                data={chartData}
+                margin={{
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  bottom: 12,
+                }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="event"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => value.substring(0, 5) + "..."}
+                  height={60}
+                  angle={-45}
+                  textAnchor="end"
+                />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip
+                  cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+                  content={<ChartTooltipContent />}
+                />
+                <Bar
+                  dataKey="participants"
+                  fill="var(--color-participants)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+          
+        </Card>
+      </div>
     </div>
   );
 }

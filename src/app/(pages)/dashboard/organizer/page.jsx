@@ -162,8 +162,7 @@ export default function OrganizerDashboard() {
           <div className="flex justify-center">
             <button
               onClick={() => signIn()}
-              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
+              className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
               Sign In
             </button>
           </div>
@@ -178,8 +177,7 @@ export default function OrganizerDashboard() {
         <p>No user found</p>
         <button
           onClick={() => signIn()}
-          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        >
+          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
           Sign In
         </button>
       </div>
@@ -192,9 +190,8 @@ export default function OrganizerDashboard() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Organizer Dashboard</h1>
         <button
-          onClick={() => signOut()}
-          className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center"
-        >
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center">
           Sign out
         </button>
       </div>
@@ -208,8 +205,7 @@ export default function OrganizerDashboard() {
             disabled={events.some(
               (event) =>
                 event.status === "pending" || event.status === "accepted"
-            )}
-          >
+            )}>
             Create Event
           </TabsTrigger>
           {/* <TabsTrigger value="profile">Profile</TabsTrigger> */}
@@ -274,8 +270,7 @@ export default function OrganizerDashboard() {
                                 : event.status === "rejected"
                                 ? "bg-red-100 text-red-800"
                                 : "bg-gray-100 text-gray-800"
-                            }
-                          >
+                            }>
                             {event.status
                               ? event.status.charAt(0).toUpperCase() +
                                 event.status.slice(1)
@@ -288,8 +283,7 @@ export default function OrganizerDashboard() {
                               variant="outline"
                               size="sm"
                               disabled={!isActionEnabled(event.status)}
-                              onClick={() => handleViewClick(event)}
-                            >
+                              onClick={() => handleViewClick(event)}>
                               {event.status === "accepted" ? (
                                 <Users className="mr-2 h-4 w-4" />
                               ) : null}
@@ -301,8 +295,7 @@ export default function OrganizerDashboard() {
                               onClick={() => {
                                 setSelectedEvent(event);
                                 setShowRulesModal(true);
-                              }}
-                            >
+                              }}>
                               Add Rules
                             </Button>
                           </div>
@@ -360,8 +353,7 @@ export default function OrganizerDashboard() {
                     console.error("Error submitting event:", error);
                     alert("An error occurred while creating the event");
                   }
-                }}
-              >
+                }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="title">Event Title</Label>
@@ -454,8 +446,7 @@ export default function OrganizerDashboard() {
                           disabled={
                             selectedEvent &&
                             isFormDisabled(selectedEvent.status)
-                          }
-                        >
+                          }>
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {startDate ? format(startDate, "PPP") : "Select date"}
                         </Button>
@@ -486,8 +477,7 @@ export default function OrganizerDashboard() {
                           disabled={
                             selectedEvent &&
                             isFormDisabled(selectedEvent.status)
-                          }
-                        >
+                          }>
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {endDate ? format(endDate, "PPP") : "Select date"}
                         </Button>
@@ -531,8 +521,7 @@ export default function OrganizerDashboard() {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={
                       selectedEvent && isFormDisabled(selectedEvent.status)
-                    }
-                  >
+                    }>
                     <option value="">Select a location</option>
                     {roomLocations.map((location) => (
                       <option key={location} value={location}>
@@ -551,8 +540,7 @@ export default function OrganizerDashboard() {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={
                       selectedEvent && isFormDisabled(selectedEvent.status)
-                    }
-                  >
+                    }>
                     <option value="">Select a location</option>
                     {roomLocations.map((location) => (
                       <option key={location} value={location}>
@@ -567,8 +555,7 @@ export default function OrganizerDashboard() {
                   className="w-full"
                   disabled={
                     selectedEvent && isFormDisabled(selectedEvent.status)
-                  }
-                >
+                  }>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Event
                 </Button>
@@ -690,8 +677,7 @@ export default function OrganizerDashboard() {
                   setSelectedFile(null);
                   setUploadError("");
                 }}
-                className="text-gray-400 hover:text-gray-500"
-              >
+                className="text-gray-400 hover:text-gray-500">
                 <X className="h-6 w-6" />
               </button>
             </div>
@@ -715,7 +701,7 @@ export default function OrganizerDashboard() {
                     method: "POST",
                     body: formData,
                   });
-                  console.log(formData)
+                  console.log(formData);
 
                   if (response.ok) {
                     alert("Rules uploaded successfully!");
@@ -730,8 +716,7 @@ export default function OrganizerDashboard() {
                   console.error("Error uploading rules:", error);
                   setUploadError("An error occurred while uploading rules");
                 }
-              }}
-            >
+              }}>
               <div className="space-y-4">
                 <div className="relative">
                   <input
@@ -743,8 +728,7 @@ export default function OrganizerDashboard() {
                   />
                   <label
                     htmlFor="file-upload"
-                    className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors"
-                  >
+                    className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
                     {selectedFile ? (
                       <div className="flex flex-col items-center">
                         <File className="h-12 w-12 text-gray-400" />
@@ -781,15 +765,13 @@ export default function OrganizerDashboard() {
                       setSelectedFile(null);
                       setUploadError("");
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    disabled={!selectedFile}
-                  >
+                    disabled={!selectedFile}>
                     Upload Rules
                   </button>
                 </div>

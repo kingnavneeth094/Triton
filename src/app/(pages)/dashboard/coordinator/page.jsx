@@ -115,7 +115,7 @@ export default function CoordinatorDashboard() {
   };
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/sign-in" });
+    signOut({ callbackUrl: "/" });
   };
 
   const handleOptionClick = (option) => {
