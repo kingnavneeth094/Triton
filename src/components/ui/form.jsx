@@ -144,4 +144,7 @@ export {
   FormField,
 }
 
+export default dynamic(() => Promise.resolve(Form), { ssr: false });
+
+
 

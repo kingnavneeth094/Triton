@@ -69,7 +69,7 @@ export default function OrganizerDashboard() {
         setEvents([]);
         console.log("No events found for this organizer");
       } else {
-        console.error("Failed to fetch events:", data.error);
+        //console.error("Failed to fetch events:", data.error);
       }
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -671,13 +671,6 @@ export default function OrganizerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Session Info at the bottom */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-        <p className="text-sm text-gray-600">Session Information:</p>
-        <pre className="mt-2 p-2 bg-white rounded border text-sm overflow-x-auto">
-          {JSON.stringify(session, null, 2)}
-        </pre>
-      </div>
 
       {showRulesModal && (
         <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-[2px] overflow-y-auto h-full w-full flex items-center justify-center z-50">
