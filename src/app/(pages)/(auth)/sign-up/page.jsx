@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 // Update roles to match your MongoDB schema
-const roles = ["admin", "organizer",];
+const roles = ["admin", "organizer"];
 
 const signUpSchema = z
   .object({
@@ -35,23 +35,16 @@ const signUpSchema = z
         if (val === undefined || val === "") return true;
         return val.length >= 3;
       }, "College name must be at least 3 characters long"),
-    numberOfRooms: z
-      .string()
-      .optional()
-      .refine((val) => {
-        if (val === undefined || val === "") return true;
-        return !isNaN(val) && parseInt(val) > 0;
-      }, "Number of rooms must be a positive number"),
   })
   .refine(
     (data) => {
       if (data.role === "admin") {
-        return !!data.college && !!data.numberOfRooms;
+        return !!data.college;
       }
       return true;
     },
     {
-      message: "College and number of rooms are required for admin role",
+      message: "College name is required for admin role",
       path: ["role"],
     }
   );
@@ -67,7 +60,6 @@ const SignUpPage = () => {
       password: "",
       role: "",
       college: "",
-      numberOfRooms: "",
     },
   });
 
@@ -75,32 +67,31 @@ const SignUpPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Prepare the formData object with only the necessary fields
       const formData = {
         name: data.name,
         email: data.email,
         password: data.password,
         role: data.role,
       };
-      // Only add college and numberOfRooms for admin role
+      // Only add college for admin role
       if (data.role === "admin") {
         formData.college = data.college;
-        formData.numberOfRooms = parseInt(data.numberOfRooms, 10);
       }
-  
-      // Log form data for debugging
+
       console.log("Submitted Data:", formData);
-  
-      // Send data to backend
+
       const res = await axios.post("/api/sign-up", formData);
       if (res.status === 201) {
         router.push("/sign-in");
       }
     } catch (error) {
-      console.error("Registration failed", error.response?.data || error.message);
+      console.error(
+        "Registration failed",
+        error.response?.data || error.message
+      );
     }
   };
-  
+
   return (
     <div className="container mx-auto flex items-center justify-center min-h-screen py-8">
       <div className="w-full max-w-md space-y-8 px-4">
@@ -174,7 +165,8 @@ const SignUpPage = () => {
                               ? "bg-primary text-primary-foreground border-primary"
                               : "bg-muted hover:bg-muted/80 border-muted-foreground/20"
                           }`}
-                          onClick={() => field.onChange(role)}>
+                          onClick={() => field.onChange(role)}
+                        >
                           <input
                             type="radio"
                             value={role}
@@ -209,25 +201,6 @@ const SignUpPage = () => {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    name="numberOfRooms"
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Number of Rooms</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Enter number of rooms"
-                            min="1"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </>
               )}
 
@@ -242,7 +215,8 @@ const SignUpPage = () => {
               Already have an account?{" "}
               <Link
                 href="/sign-in"
-                className="font-medium text-primary hover:underline">
+                className="font-medium text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </p>

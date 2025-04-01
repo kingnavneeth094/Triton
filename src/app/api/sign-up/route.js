@@ -40,7 +40,6 @@ export async function POST(req) {
     }
     
     const newUser = new userModel(userData);
-    console.log("User to be saved:", newUser);
     
     await newUser.save();
 

@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   rooms: [
     {
       name: { type: String, required: true },
-      roomNumber: { type: Number, required: true, unique: true, index: true },
+      roomNumber: { type: Number, required: true, index: true },
     },
   ],
   numberOfRooms: { type: Number, default: 0 },
