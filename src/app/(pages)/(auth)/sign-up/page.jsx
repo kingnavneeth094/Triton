@@ -20,34 +20,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 // Update roles to match your MongoDB schema
-const roles = ["admin", "organizer"];
-
 const signUpSchema = z
   .object({
     name: z.string().min(3, "Name must be at least 3 characters long").max(50),
     email: z.string().email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
-    role: z.enum(roles, { required_error: "Please select a role" }),
-    college: z
-      .string()
-      .optional()
-      .refine((val) => {
-        if (val === undefined || val === "") return true;
-        return val.length >= 3;
-      }, "College name must be at least 3 characters long"),
   })
-  .refine(
-    (data) => {
-      if (data.role === "admin") {
-        return !!data.college;
-      }
-      return true;
-    },
-    {
-      message: "College name is required for admin role",
-      path: ["role"],
-    }
-  );
+
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -58,12 +37,8 @@ const SignUpPage = () => {
       name: "",
       email: "",
       password: "",
-      role: "",
-      college: "",
     },
   });
-
-  const watchRole = form.watch("role");
 
   const onSubmit = async (data) => {
     try {
@@ -71,12 +46,7 @@ const SignUpPage = () => {
         name: data.name,
         email: data.email,
         password: data.password,
-        role: data.role,
       };
-      // Only add college for admin role
-      if (data.role === "admin") {
-        formData.college = data.college;
-      }
 
       console.log("Submitted Data:", formData);
 
@@ -149,60 +119,6 @@ const SignUpPage = () => {
                   </FormItem>
                 )}
               />
-
-              <FormField
-                name="role"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Role</FormLabel>
-                    <div className="grid grid-cols-2 gap-2">
-                      {roles.map((role) => (
-                        <label
-                          key={role}
-                          className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
-                            field.value === role
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-muted hover:bg-muted/80 border-muted-foreground/20"
-                          }`}
-                          onClick={() => field.onChange(role)}
-                        >
-                          <input
-                            type="radio"
-                            value={role}
-                            checked={field.value === role}
-                            onChange={() => field.onChange(role)}
-                            className="sr-only"
-                          />
-                          {role.charAt(0).toUpperCase() + role.slice(1)}
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {watchRole === "admin" && (
-                <>
-                  <FormField
-                    name="college"
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>College Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter your college name"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
 
               <Button className="w-full" type="submit">
                 Sign Up

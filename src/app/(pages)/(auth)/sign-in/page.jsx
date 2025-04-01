@@ -1,10 +1,11 @@
 "use client";
 import React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import Link from "next/link";
 import {
   Form,
   FormControl,
@@ -15,23 +16,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signIn } from "next-auth/react";
 
-const roles = ["admin", "coordinator", "organizer"];
-
-export const signInSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email or username is required")
-    .max(100, "Email or username is too long"),
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters long")
-    .max(100, "Password is too long"),
-  role: z.enum(roles, { required_error: "Please select a role" }),
+// Define the sign-in schema
+const signInSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
-const Page = () => {
+const SignInPage = () => {
   const router = useRouter();
 
   const form = useForm({
@@ -39,21 +31,26 @@ const Page = () => {
     defaultValues: {
       email: "",
       password: "",
-      role: "admin",
     },
   });
 
   const onSubmit = async (data) => {
-    const result = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
-      role: data.role, // Sending role to backend
-      redirect: false,
-      callbackUrl: `/dashboard/${data.role}`, // Redirect to role-specific dashboard
-    });
+    try {
+      const formData = {
+        email: data.email,
+        password: data.password,
+      };
 
-    if (result?.url) {
-      router.replace(result.url);
+      console.log("Submitted Data:", formData);
+
+      const res = await axios.post("/api/sign-in", formData);
+      if (res.status === 200) {
+        const { role } = res.data; // Get the user's role from the response
+        router.push(`/dashboard/${role}`); // Redirect to the respective dashboard
+      }
+    } catch (error) {
+      console.error("Sign-in failed", error.response?.data || error.message);
+      alert(error.response?.data.message || "Sign-in failed. Please try again.");
     }
   };
 
@@ -62,7 +59,7 @@ const Page = () => {
       <div className="w-full max-w-md space-y-8 px-4">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-            Welcome to Triton
+            Sign In
           </h1>
         </div>
 
@@ -101,39 +98,6 @@ const Page = () => {
                 )}
               />
 
-              <FormField
-                name="role"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Role</FormLabel>
-                    <div className="grid grid-cols-3 gap-2">
-                      {roles.map((role) => (
-                        <label
-                          key={role}
-                          className={`flex items-center justify-center p-2 rounded-md cursor-pointer border ${
-                            field.value === role
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-muted hover:bg-muted/80 border-muted-foreground/20"
-                          }`}
-                          onClick={() => field.onChange(role)}
-                        >
-                          <input
-                            type="radio"
-                            value={role}
-                            checked={field.value === role}
-                            onChange={() => field.onChange(role)}
-                            className="sr-only"
-                          />
-                          {role.charAt(0).toUpperCase() + role.slice(1)}
-                        </label>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <Button className="w-full" type="submit">
                 Sign In
               </Button>
@@ -142,7 +106,7 @@ const Page = () => {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
-              Not a member yet?{" "}
+              Don't have an account?{" "}
               <Link
                 href="/sign-up"
                 className="font-medium text-primary hover:underline"
@@ -157,4 +121,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default SignInPage;

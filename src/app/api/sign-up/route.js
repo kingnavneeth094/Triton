@@ -7,7 +7,7 @@ export async function POST(req) {
   try {
     await dbConnect();
 
-    const { name, email, password, role, college} = await req.json();
+    const { name, email, password, role} = await req.json();
 
     // Check if user already exists
     const user = await userModel.findOne({ email });
@@ -26,11 +26,7 @@ export async function POST(req) {
       name,
       email,
       password: hashedPassword,
-      role: role || "",
-      college: college || "",
-      picture: "",
-      descriptions: "",
-      numberOfRooms: 0, // Add default value
+      role: "admin"
     };
     
     
