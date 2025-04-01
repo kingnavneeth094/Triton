@@ -1,51 +1,83 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, LogOut, UserPlus, Users, Settings, Layout, Calendar, X } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  LogOut,
+  UserPlus,
+  Users,
+  Settings,
+  Layout,
+  Calendar,
+  X,
+} from "lucide-react";
 import { useSession, signOut, signIn } from "next-auth/react";
-import axios from 'axios';
+import axios from "axios";
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showFestForm, setShowFestForm] = useState(false);
   const [showCoordinatorForm, setShowCoordinatorForm] = useState(false);
+  const [showVenueManagerForm, setShowVenueManagerForm] = useState(false);
+  const [venueManagerData, setVenueManagerData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
   const [festData, setFestData] = useState({
-    name: '',
-    startDate: '',
-    endDate: '',
-    description: ''
+    name: "",
+    startDate: "",
+    endDate: "",
+    description: "",
   });
   const [coordinatorData, setCoordinatorData] = useState({
-    name: '',
-    email: '',
-    password: ''
+    name: "",
+    email: "",
+    password: "",
   });
-  const [formError, setFormError] = useState('');
-  const [formSuccess, setFormSuccess] = useState('');
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
+  const handleVenueManagerInputChange = (e) => {
+    const { name, value } = e.target;
+    setVenueManagerData({ ...venueManagerData, [name]: value });
+  };
+  const handleSubmitVenueManager = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        "/api/add-venue-manager",
+        venueManagerData
+      );
+
+      if (response.status === 201) {
+        alert("Venue Manager created successfully!");
+        setVenueManagerData({ name: "", email: "", password: "" });
+        setShowVenueManagerForm(false);
+      }
+    } catch (error) {
+      alert(error.response?.data?.error || "Failed to create venue manager");
+    }
+  };
 
   const handleLogout = () => {
     // Add your logout logic here
-    router.push('/login');
+    router.push("/");
   };
 
   const handleOptionClick = (option) => {
     switch (option) {
-      case 'create-coordinators':
+      case "create-coordinators":
         setShowCoordinatorForm(true);
         break;
-      case 'view-coordinators':
-        router.push('/dashboard/admin/coordinators');
+      case "view-coordinators":
+        router.push("/dashboard/admin/view");
         break;
-      case 'configure-layout':
-        router.push('/dashboard/admin/configure');
-        break;
-      case 'view-layouts':
-        router.push('/dashboard/admin/view');
-        break;
-      case 'add-fest':
+      case "add-fest":
         setShowFestForm(true);
         break;
       default:
@@ -66,47 +98,52 @@ export default function AdminDashboard() {
   const handleSubmitFest = (e) => {
     e.preventDefault();
     // Add your logic to save the fest data
-    console.log('Submitting fest data:', festData);
-    
+    console.log("Submitting fest data:", festData);
+
     // Clear the form and close it
     setFestData({
-      name: '',
-      startDate: '',
-      endDate: '',
-      description: ''
+      name: "",
+      startDate: "",
+      endDate: "",
+      description: "",
     });
     setShowFestForm(false);
-    
+
     // Show success message or redirect
     // For now, we'll just close the form
   };
 
   const handleSubmitCoordinator = async (e) => {
     e.preventDefault();
-    setFormError('');
-    setFormSuccess('');
-    
+    setFormError("");
+    setFormSuccess("");
+
     try {
-      const response = await axios.post('/api/add-coordinator', coordinatorData);
-      
+      const response = await axios.post(
+        "/api/add-coordinator",
+        coordinatorData
+      );
+
       if (response.status === 201) {
-        setFormSuccess('Coordinator created successfully!');
+        setFormSuccess("Coordinator created successfully!");
         // Clear the form
         setCoordinatorData({
-          name: '',
-          email: '',
-          password: ''
+          name: "",
+          email: "",
+          password: "",
         });
-        
+
         // Close the form after a delay
         setTimeout(() => {
           setShowCoordinatorForm(false);
-          setFormSuccess('');
+          setFormSuccess("");
         }, 2000);
       }
     } catch (error) {
-      setFormError(error.response?.data?.error || 'Failed to create coordinator');
-      console.error('Error creating coordinator:', error);
+      setFormError(
+        error.response?.data?.error || "Failed to create coordinator"
+      );
+      console.error("Error creating coordinator:", error);
     }
   };
 
@@ -185,7 +222,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Create Coordinators Card */}
           <div
-            onClick={() => handleOptionClick('create-coordinators')}
+            onClick={() => handleOptionClick("create-coordinators")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
@@ -193,15 +230,19 @@ export default function AdminDashboard() {
                 <UserPlus className="h-8 w-8 text-blue-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Create Coordinators</h3>
-                <p className="mt-1 text-sm text-gray-500">Add new coordinators to the system</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Create Event Coordinators
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Add new event coordinators to the system
+                </p>
               </div>
             </div>
           </div>
 
           {/* View Coordinators Card */}
           <div
-            onClick={() => handleOptionClick('view-coordinators')}
+            onClick={() => handleOptionClick("view-coordinators")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
@@ -209,47 +250,19 @@ export default function AdminDashboard() {
                 <Users className="h-8 w-8 text-green-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">View Coordinators</h3>
-                <p className="mt-1 text-sm text-gray-500">Manage and view existing coordinators</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Configure Layout Card */}
-          <div
-            onClick={() => handleOptionClick('configure-layout')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Settings className="h-8 w-8 text-purple-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Configure Layout</h3>
-                <p className="mt-1 text-sm text-gray-500">Set up and manage room layouts</p>
-              </div>
-            </div>
-          </div>
-
-          {/* View Layouts Card */}
-          <div
-            onClick={() => handleOptionClick('view-layouts')}
-            className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Layout className="h-8 w-8 text-orange-500" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">View Layouts</h3>
-                <p className="mt-1 text-sm text-gray-500">View and manage room layouts</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  View Coordinators
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Manage and view existing coordinators
+                </p>
               </div>
             </div>
           </div>
 
           {/* Add Fest Card */}
           <div
-            onClick={() => handleOptionClick('add-fest')}
+            onClick={() => handleOptionClick("add-fest")}
             className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
           >
             <div className="flex items-center">
@@ -257,148 +270,74 @@ export default function AdminDashboard() {
                 <Calendar className="h-8 w-8 text-teal-500" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Add Fest</h3>
-                <p className="mt-1 text-sm text-gray-500">Create and configure new fests</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Register College and Add Fest
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Create and configure new fests for your college
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Add Fest Modal */}
-      {showFestForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add New Fest</h2>
-              <button 
-                onClick={() => setShowFestForm(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmitFest}>
-              <div className="space-y-4">
-                {/* Fest Name */}
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    Fest Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Enter fest name"
-                    value={festData.name}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                
-                {/* Start Date */}
-                <div>
-                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    name="startDate"
-                    id="startDate"
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    value={festData.startDate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                
-                {/* End Date */}
-                <div>
-                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    name="endDate"
-                    id="endDate"
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    value={festData.endDate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                
-                {/* Description */}
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    id="description"
-                    rows="3"
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Enter a brief description of the fest"
-                    value={festData.description}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              
-              <div className="mt-6 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowFestForm(false)}
-                  className="mr-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Add Fest
-                </button>
-              </div>
-            </form>
+      {/* Create Venue Manager Card */}
+      <div
+        onClick={() => setShowVenueManagerForm(true)}
+        className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 border-2 border-gray-200"
+      >
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <UserPlus className="h-8 w-8 text-purple-500" />
+          </div>
+          <div className="ml-4">
+            <h3 className="text-lg font-medium text-gray-900">
+              Create Venue Manager
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Add a new venue manager to the system
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Add Coordinator Modal */}
       {showCoordinatorForm && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
           <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add New Coordinator</h2>
-              <button 
+              <h2 className="text-xl font-bold text-gray-900">
+                Add New Coordinator
+              </h2>
+              <button
                 onClick={() => setShowCoordinatorForm(false)}
                 className="text-gray-400 hover:text-gray-500"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             {formError && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                 {formError}
               </div>
             )}
-            
+
             {formSuccess && (
               <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
                 {formSuccess}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmitCoordinator}>
               <div className="space-y-4">
                 {/* Coordinator Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Full Name
                   </label>
                   <input
@@ -412,10 +351,13 @@ export default function AdminDashboard() {
                     onChange={handleCoordinatorInputChange}
                   />
                 </div>
-                
+
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Email
                   </label>
                   <input
@@ -429,10 +371,13 @@ export default function AdminDashboard() {
                     onChange={handleCoordinatorInputChange}
                   />
                 </div>
-                
+
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Password
                   </label>
                   <input
@@ -447,7 +392,7 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   type="button"
@@ -468,6 +413,88 @@ export default function AdminDashboard() {
         </div>
       )}
       <p>{session.user.role}</p>
+      {showVenueManagerForm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                Add Venue Manager
+              </h2>
+              <button
+                onClick={() => setShowVenueManagerForm(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitVenueManager}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
+                    placeholder="Enter name"
+                    value={venueManagerData.name}
+                    onChange={handleVenueManagerInputChange}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
+                    placeholder="Enter email"
+                    value={venueManagerData.email}
+                    onChange={handleVenueManagerInputChange}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
+                    placeholder="Enter password"
+                    value={venueManagerData.password}
+                    onChange={handleVenueManagerInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowVenueManagerForm(false)}
+                  className="mr-3 px-4 py-2 border rounded-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                >
+                  Create Venue Manager
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

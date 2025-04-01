@@ -1,72 +1,68 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Users, Loader, AlertTriangle } from "lucide-react";
 
-export default function ViewLayouts() {
-  const router = useRouter();
-  const [rooms, setRooms] = useState([]);
+export default function ViewCoordinators() {
+  const [coordinators, setCoordinators] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get rooms from localStorage
-    const storedRooms = localStorage.getItem('roomLayouts');
-    if (storedRooms) {
-      setRooms(JSON.parse(storedRooms));
-    }
+    const fetchCoordinators = async () => {
+      try {
+        const response = await axios.get("/api/view-coordinators");
+        setCoordinators(response.data);
+      } catch (err) {
+        setError("Failed to load coordinators");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCoordinators();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <button
-              onClick={() => router.push('/dashboard/admin/')}
-              className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">View Layouts</h1>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+          <Users className="mr-2" /> Event Coordinators
+        </h2>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Status Legend */}
-        <div className="mb-6 flex items-center space-x-4">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-sm text-gray-600">Occupied</span>
+        {loading && (
+          <div className="flex justify-center items-center py-4">
+            <Loader className="animate-spin text-blue-600 h-6 w-6" />
           </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-            <span className="text-sm text-gray-600">Available</span>
-          </div>
-        </div>
+        )}
 
-        {/* Room Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {rooms.map((room, index) => (
-            <div
-              key={index}
-              className="relative aspect-square bg-gray-100 rounded-lg p-4 hover:bg-gray-200 transition-colors duration-200 flex flex-col items-center justify-center"
+        {error && (
+          <div className="bg-red-100 text-red-600 p-3 rounded mt-4 flex items-center">
+            <AlertTriangle className="mr-2" /> {error}
+          </div>
+        )}
+
+        {!loading && !error && coordinators.length === 0 && (
+          <p className="text-center text-gray-500 mt-4">No coordinators found.</p>
+        )}
+
+        <ul className="mt-4 space-y-4">
+          {coordinators.map((coordinator) => (
+            <li
+              key={coordinator.id}
+              className="p-4 bg-gray-100 rounded-lg shadow-sm flex justify-between"
             >
-              {/* Status Indicator */}
-              <div className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full"></div>
-              
-              {/* Room Name */}
-              <span className="text-lg font-medium text-gray-900 text-center">{room}</span>
-              
-              {/* Room Number */}
-              <span className="text-sm text-gray-500 mt-1">Room {index + 1}</span>
-            </div>
+              <div>
+                <p className="text-lg font-semibold text-gray-700">
+                  {coordinator.name}
+                </p>
+                <p className="text-sm text-gray-500">{coordinator.email}</p>
+              </div>
+              <span className="text-sm text-blue-600 font-medium">Coordinator</span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
   );
-} 
+}

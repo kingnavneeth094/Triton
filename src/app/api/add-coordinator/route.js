@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/dbConnect";
-import Event from "@/models/events";
 import User from "@/models/user";
 
 export async function POST(request) {
@@ -43,7 +42,7 @@ export async function POST(request) {
       name,
       email,
       password: hashedPassword,
-      role: "coordinator", // Assign coordinator role
+      role: "event_coordinator", // Assign coordinator role
       // All other fields will use their default values from the schema
     });
 
