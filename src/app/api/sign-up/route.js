@@ -7,8 +7,7 @@ export async function POST(req) {
   try {
     await dbConnect();
 
-    const { name, email, password, role, college, numberOfRooms } = await req.json();
-    console.log(numberOfRooms);
+    const { name, email, password, role, college} = await req.json();
 
     // Check if user already exists
     const user = await userModel.findOne({ email });
@@ -34,10 +33,6 @@ export async function POST(req) {
       numberOfRooms: 0, // Add default value
     };
     
-    // Set numberOfRooms if provided
-    if (numberOfRooms !== undefined && numberOfRooms !== null) {
-      userData.numberOfRooms = Number(numberOfRooms);
-    }
     
     const newUser = new userModel(userData);
     
