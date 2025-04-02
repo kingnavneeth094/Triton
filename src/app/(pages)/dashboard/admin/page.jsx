@@ -50,7 +50,7 @@ export default function AdminDashboard() {
 
     try {
       const response = await axios.post(
-        "/api/add-venue-manager",
+        "/api/add-venue_manager",
         venueManagerData
       );
 
