@@ -78,7 +78,7 @@ export default function AdminDashboard() {
         router.push("/dashboard/admin/view");
         break;
       case "add-fest":
-        setShowFestForm(true);
+        router.push("/dashboard/admin/fest")
         break;
       default:
         break;
